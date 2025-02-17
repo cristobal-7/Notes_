@@ -1,0 +1,90 @@
+🛠️ Solución usando transacciones
+
+Vamos a resolver el ejercicio usando el objeto transactions del paquete arules:
+🔍 Pasos a seguir
+1.	Leer el archivo en formato basket.
+2.	Contar la frecuencia de productos usando itemFrequency().
+3.	Mostrar los 5 productos más y menos comprados.
+4.	Identificar el patrón de compra más frecuente relacionado al producto más comprado.
+
+⚙️ Código en R
+library(arules)
+# Leer el archivo como transacciones
+transacciones <- read.transactions("Lista_Productos.csv", format = "basket", sep = ",", rm.duplicates = TRUE)
+
+# Ver un resumen de las transacciones
+summary(transacciones)
+
+1️⃣    Recuento de productos
+
+# Calcular frecuencia de productos
+frecuencias <- itemFrequency(transacciones, type = "absolute")
+
+# Convertir a data frame para manipularlo fácilmente
+frecuencias_df <- data.frame(
+  Producto = names(frecuencias),
+  Frecuencia = frecuencias
+)
+
+# Ordenar por frecuencia
+frecuencias_df <- frecuencias_df[order(-frecuencias_df$Frecuencia), ]
+
+# Top 5 más comprados
+top_5_mas <- head(frecuencias_df, 5)
+
+# Top 5 menos comprados
+top_5_menos <- tail(frecuencias_df, 5)
+
+# Mostrar resultados
+top_5_mas
+top_5_menos
+
+2️⃣    Identificar el producto más comprado
+
+# Producto más comprado
+producto_mas_comprado <- top_5_mas$Producto[1]
+
+# Mostrar el producto más comprado
+producto_mas_comprado
+
+
+3️⃣   Encontrar el patrón de compra más frecuente asociado al producto más comprado
+
+# Filtrar transacciones que contienen el producto más comprado
+transacciones_producto <- transacciones[which(transacciones %in% producto_mas_comprado)]
+
+
+# Generar reglas de asociación para encontrar patrones
+reglas <- apriori(transacciones, parameter = list(support = 0.001, confidence = 0.1, minlen = 2),
+                  appearance = list(lhs = producto_mas_comprado, default = "rhs"))
+
+# Ordenar por confianza
+reglas_ordenadas <- sort(reglas, by = "confidence", decreasing = TRUE)
+
+# Mostrar las reglas más relevantes
+inspect(head(reglas_ordenadas, 5))
+
+ 
+🧠 Explicación
+Lectura de transacciones:
+Leemos el archivo con read.transactions().
+
+Frecuencias de productos:
+itemFrequency() nos da la cantidad de veces que aparece cada producto.
+
+Reglas de asociación:
+Usamos apriori() para encontrar las combinaciones de productos más comunes junto con el producto más comprado.
+
+
+✅ Resultados esperados
+Top 5 productos más comprados:
+Muestra los 5 productos con mayor frecuencia.
+
+Top 5 productos menos comprados:
+Muestra los 5 productos con menor frecuencia.
+
+Producto más comprado:
+Por ejemplo, Botella de leche entera 1L.
+
+Patrón de compra más frecuente:
+El conjunto de productos que más frecuentemente aparece con el producto más comprado.
